@@ -4,8 +4,74 @@
 #include <stdint.h>
 #include <stdio.h>
 
+/**
+ * A basic interface for working with UM output files
+ *
+ * UM output files are stored as an array of big-endian 64 bit values. The
+ * array is structured into several sections - a header of 256 values, sections
+ * for constants, a lookup table for data values and the data values
+ * themselves. The full format is described in UM technical paper F3.
+ *
+ * This interface provides functions to open, close and write an output file.
+ * The file must be accessable in random-access mode. The object returned by
+ * the open function contains the header and lookup table. Some entries have
+ * descriptive names, others use placeholders since not all entries are defined
+ * by the format.
+ *
+ * This is only a simple interface for getting subsets of the data, it may be
+ * expanded as there is need for it.
+ */
+
+struct FFHeader;
+struct FFLookup;
+
+/**
+ * The UM file object
+ *
+ * header and lookup are initialised by the open function. They may be
+ * memory-mapped, do not write to them unless you want that to appear in the
+ * file itself.
+ */
+struct FieldsFile {
+    FILE * stream;
+    struct FFHeader * header;
+    struct FFLookup * lookup;
+};
+
+/**
+ * Open a new file given a filename
+ * 
+ * The named file will be opened in random-access read-write mode. If a read
+ * error occurs the function will call perror() and exit(-1).
+ */
+struct FieldsFile * OpenFieldsFile(const char * filename);
+
+/**
+ * Write a file to disk
+ *
+ * Data in the header & lookup tables will be written to disk. This doesn't
+ * alter the data tables, they should be operated on separately.
+ */
+void WriteFieldsFile(struct FieldsFile * ff);
+
+/**
+ * Close the file, flushing & freeing buffers
+ *
+ * May implicitly call write. After calling this the header and lookup pointers
+ * will be freed.
+ */
+void CloseFieldsFile(struct FieldsFile * ff);
+
+/// Missing data constant
 static const int64_t IMDI = -32768;
 
+/**
+ * Date container
+ *
+ * Multiple dates are stored in the file with this format. Convenience
+ * functions may be added to convert this to a ctime date structure at some
+ * point.
+ */
 struct FFDate {
     int64_t year;
     int64_t month;
@@ -15,6 +81,14 @@ struct FFDate {
     int64_t second;
 };
 
+/**
+ * Header structure
+ *
+ * Many entries are not used in the UM output format, they are given names u%d,
+ * where %d is the offset as given by UM document F3 (i.e. 1-based). Other
+ * entries are used in the format but have not yet had names entered (patches
+ * appreciated).
+ */
 struct FFHeader {
     int64_t version;
     int64_t u2;
@@ -123,6 +197,12 @@ struct FFHeader {
     int64_t u169;
     int64_t u170[87];
 };
+
+/**
+ * Format of a single lookup table entry
+ *
+ * As per the header there are lots of unused values in the lookup table.
+ */
 struct FFLookup {
     struct FFDate valid_time;
     struct FFDate data_time;
@@ -180,14 +260,5 @@ struct FFLookup {
     double mks_scale;
 };
 
-struct FieldsFile {
-    FILE * stream;
-    struct FFHeader * header;
-    struct FFLookup * lookup;
-};
-
-struct FieldsFile * OpenFieldsFile(const char * filename);
-void WriteFieldsFile(struct FieldsFile * ff);
-void CloseFieldsFile(struct FieldsFile * ff);
 
 #endif
