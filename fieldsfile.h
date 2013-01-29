@@ -1,12 +1,8 @@
-#ifndef FIELDSFILE_H
-#define FIELDSFILE_H
-
-#include <stdint.h>
-#include <stdio.h>
-
-/**
- * A basic interface for working with UM output files
- *
+/*
+ * \file    fieldsfile.h
+ * \author  Scott Wales (scott.wales@unimelb.edu.au)
+ * \brief   Interface for working with UM output files
+ * 
  * UM output files are stored as an array of big-endian 64 bit values. The
  * array is structured into several sections - a header of 256 values, sections
  * for constants, a lookup table for data values and the data values
@@ -20,13 +16,32 @@
  *
  * This is only a simple interface for getting subsets of the data, it may be
  * expanded as there is need for it.
- */
+ *
+ * Copyright 2013 ARC Centre of Excellence for Climate System Science
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
+#ifndef FIELDSFILE_H
+#define FIELDSFILE_H
+
+#include <stdint.h>
+#include <stdio.h>
 
 struct FFHeader;
 struct FFLookup;
 
-/**
- * The UM file object
+/** The UM file object
  *
  * header and lookup are initialised by the open function. They may be
  * memory-mapped, do not write to them unless you want that to appear in the
@@ -38,8 +53,7 @@ struct FieldsFile {
     struct FFLookup * lookup;
 };
 
-/**
- * Open a new file given a filename
+/** Open a new file given a filename
  * 
  * The named file will be opened in random-access read-write mode. If a read
  * error occurs the function will call perror() and exit(-1).
@@ -55,12 +69,22 @@ struct FieldsFile * OpenFieldsFile(const char * filename);
 void WriteFieldsFile(struct FieldsFile * ff);
 
 /**
+ * Read a single 2D field from the fields file
+ *
+ * Data array will be resized as needed
+ */
+void ReadFieldsFileData(double ** data,
+                        struct FieldsFile * ff,
+                        int field);
+
+/**
  * Close the file, flushing & freeing buffers
  *
  * May implicitly call write. After calling this the header and lookup pointers
  * will be freed.
  */
 void CloseFieldsFile(struct FieldsFile * ff);
+
 
 /// Missing data constant
 static const int64_t IMDI = -32768;
@@ -80,6 +104,9 @@ struct FFDate {
     int64_t minute;
     int64_t second;
 };
+
+
+double FFDateToUnixTime(const struct FFDate date);
 
 /**
  * Header structure
@@ -236,7 +263,7 @@ struct FFLookup {
     int64_t u40;
     int64_t u41;
     int64_t stash_code;
-    int64_t psudo_dimension;
+    int64_t pseudo_dimension;
     int64_t u44;
     int64_t u45;
     double u46;

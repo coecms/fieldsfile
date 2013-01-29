@@ -31,6 +31,8 @@ int main(int argc, char ** argv){
                   ff->lookup[i].columns);
            printf("height: %e\n",
                   ff->lookup[i].heightlevel);
+           printf("pseudo: %lld\n",
+                  ff->lookup[i].pseudo_dimension);
         }
     }
 
