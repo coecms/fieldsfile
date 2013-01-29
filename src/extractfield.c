@@ -84,6 +84,8 @@ int main(int argc, char ** argv){
 
     struct FieldsFile * ff = OpenFieldsFile(args.filename);
 
+    // We need a list of unique values for each dimension. This is done using a
+    // list that stores unique values (it's really an ordered set).
     struct list * timelist = NULL;
     struct list * heightlist = NULL;
     struct list * pseudolist = NULL;
@@ -95,10 +97,12 @@ int main(int argc, char ** argv){
     size_t found = 0;
     for (size_t i=0;i<ff->header->field_count;++i){
         if (ff->lookup[i].stash_code == args.stash){
+            // Each value will only be added once
             ListAdd(&timelist,FFDateToUnixTime(ff->lookup[i].valid_time)); 
             ListAdd(&heightlist,ff->lookup[i].heightlevel);
             ListAdd(&pseudolist,ff->lookup[i].pseudo_dimension);
 
+            // Horizontal dimensions
             size[0] = ff->lookup[i].rows;
             size[1] = ff->lookup[i].columns;
             origin[0] = ff->lookup[i].origin_latitude;
@@ -107,13 +111,17 @@ int main(int argc, char ** argv){
             step[1] = ff->lookup[i].longitude_interval;
 
             ++found;
-            printf("step %e\t%e\n",step[0],step[1]);
         }
     }
     if (!found){
         fprintf(stderr, "STASH %d not present in file\n",args.stash);
         exit(1);
     }
+
+    // Now to write the field out as Netcdf. Firstly we need to write out the
+    // dimensions. At the moment metadata is ignored, units &c will need to be
+    // added elsewhere. The fieldsfile format also allows for alternate grid
+    // types, we assume a regular grid here.
 
     // Set the dimension values
     double * lats = malloc(size[0]*sizeof(*lats));
@@ -172,21 +180,20 @@ int main(int argc, char ** argv){
     errc |= nc_put_var_double(out,varlon,lons);
     assert(errc == NC_NOERR);
 
-    // Write data values
+    // Write data values layer by layer
     double * data = NULL;
     for (size_t i=0;i<ff->header->field_count;++i){
         if (ff->lookup[i].stash_code == args.stash){
+            // Get the index of this slice in time & vertical level
             int timei = ListIndex(timelist,FFDateToUnixTime(ff->lookup[i].valid_time)); 
             int heighti = ListIndex(heightlist,ff->lookup[i].heightlevel);
             int bini = ListIndex(pseudolist,ff->lookup[i].pseudo_dimension);
 
-            size_t start[] = {
-                timei, heighti, bini, 0, 0
-            };
-            size_t count[] = {
-                1, 1, 1, size[0], size[1]
-            };
+            // Hyperslice of the field at a single horizontal level
+            size_t start[] = { timei, heighti, bini, 0, 0 };
+            size_t count[] = { 1, 1, 1, size[0], size[1] };
 
+            // Read the layer from the fieldsfile, write to netcdf
             ReadFieldsFileData(&data,ff,i);
             errc = nc_put_vara_double(out,varstash,start,count,data);
             if (errc != NC_NOERR){
