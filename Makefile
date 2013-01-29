@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean doc
 all:
 	
 BIN=uniqueheights stash describefield extractfield
@@ -13,6 +13,8 @@ extractfield:obj/list.o
 all:$(BIN)
 clean:
 	$(RM) *.d *.o $(BIN)
+doc:Doxyfile $(wildcard src/*)
+	doxygen $<
 
 obj/%.o:src/%.c
 	@mkdir -p $(dir $@)
