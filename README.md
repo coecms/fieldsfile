@@ -1,4 +1,5 @@
-=Utilities for working with UM output files=
+Utilities for working with UM output files
+==========================================
 
 * **stashcodes**: Prints a list of the stash code of each field in the file.
   Each time/height layer will produce its own code, to get a list of unique
@@ -11,4 +12,16 @@
   tools like xconv assume unique heights for each field.
 * **extractfield**: Create a netcdf file holding a single variable from a UM
   output, respecting pseudo levels
+
+Building
+--------
+
+To build run `make` from the top directory. The code was built using the Intel
+compiler, you may need to change the calls to _bswap64 to your compiler's byte
+swapping intrinsic if using another compiler.
+
+Netcdf is assumed to be in LD_LIBRARY_PATH, if not tell make where to find the
+libary like:
+
+    make CPPFLAGS+="-I/path/to/netcdf/include" LDFLAGS+="-L/path/to/netcdf/lib"
 
