@@ -1,4 +1,4 @@
-/*
+/**
  * \file    list.h
  * \author  Scott Wales (scott.wales@unimelb.edu.au)
  * \brief   A list holding sorted, unique values
@@ -24,33 +24,46 @@
 extern "C" {
 #endif
 
+/** @defgroup list
+ *  @{
+ */
+
 struct list;
 
-/** Adds a new value to the list at the correct sorted position
+/** 
+ * @brief Adds a new value to the list at the correct sorted position
  *
- * @pre: \p *list is either a pointer to list or NULL, indicating an empty list
- * @post: \p *list is modified to hold the new value
+ * @pre \p *list is either a pointer to list or NULL, indicating an empty list
+ * @post \p *list is modified to hold the new value
  */
 void ListAdd(struct list ** list, double value);
 
-/** Returns a count of all items in \p *list
+/** 
+ * @brief Returns a count of all items in \p *list
  */
  int ListCount(const struct list * list);
 
-/** Converts the list to an array
+/** 
+ * @brief Converts the list to an array
  *
- * @pre:  \p *array must be reallocable
- * @post: \p *array holds a sorted list of the unique values held in \p *list
+ * @pre  \p *array must be reallocable
+ * @post \p *array holds a sorted list of the unique values held in \p *list
  */
 void ListToArray(double ** array, const struct list * list);
 
-/** Finds the sorted index of value within \p *list
+/** 
+ * @brief Finds the sorted index of value within \p *list
  */
  int ListIndex(const struct list * list, double value);
 
-/** Frees data held by \p *list
+/** 
+ * @brief Frees data held by \p *list
  */
 void ListFree(struct list * list);
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 }

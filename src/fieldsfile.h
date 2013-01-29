@@ -1,4 +1,4 @@
-/*
+/**
  * \file    fieldsfile.h
  * \author  Scott Wales (scott.wales@unimelb.edu.au)
  * \brief   Interface for working with UM output files
@@ -34,6 +34,9 @@
 
 #ifndef FIELDSFILE_H
 #define FIELDSFILE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdint.h>
 #include <stdio.h>
@@ -41,7 +44,12 @@
 struct FFHeader;
 struct FFLookup;
 
-/** The UM file object
+/** @defgroup fieldsfile
+ *  @{
+ */
+
+/** 
+ * @brief The UM file object
  *
  * header and lookup are initialised by the open function. They may be
  * memory-mapped, do not write to them unless you want that to appear in the
@@ -53,7 +61,8 @@ struct FieldsFile {
     struct FFLookup * lookup;
 };
 
-/** Open a new file given a filename
+/** 
+ * @brief Open a new file given a filename
  * 
  * The named file will be opened in random-access read-write mode. If a read
  * error occurs the function will call perror() and exit(-1).
@@ -61,7 +70,7 @@ struct FieldsFile {
 struct FieldsFile * OpenFieldsFile(const char * filename);
 
 /**
- * Write a file to disk
+ * @brief Write a file to disk
  *
  * Data in the header & lookup tables will be written to disk. This doesn't
  * alter the data tables, they should be operated on separately.
@@ -69,7 +78,7 @@ struct FieldsFile * OpenFieldsFile(const char * filename);
 void WriteFieldsFile(struct FieldsFile * ff);
 
 /**
- * Read a single 2D field from the fields file
+ * @brief Read a single 2D field from the fields file
  *
  * Data array will be resized as needed
  */
@@ -78,7 +87,7 @@ void ReadFieldsFileData(double ** data,
                         int field);
 
 /**
- * Close the file, flushing & freeing buffers
+ * @brief Close the file, flushing & freeing buffers
  *
  * May implicitly call write. After calling this the header and lookup pointers
  * will be freed.
@@ -90,7 +99,7 @@ void CloseFieldsFile(struct FieldsFile * ff);
 static const int64_t IMDI = -32768;
 
 /**
- * Date container
+ * @brief Date container
  *
  * Multiple dates are stored in the file with this format. Convenience
  * functions may be added to convert this to a ctime date structure at some
@@ -109,7 +118,7 @@ struct FFDate {
 double FFDateToUnixTime(const struct FFDate date);
 
 /**
- * Header structure
+ * @brief Header structure
  *
  * Many entries are not used in the UM output format, they are given names u%d,
  * where %d is the offset as given by UM document F3 (i.e. 1-based). Other
@@ -151,47 +160,7 @@ struct FFHeader {
     int64_t u47;
     int64_t u48;
     int64_t u49;
-    int64_t u50[50];
-    int64_t u100;
-    int64_t u101;
-    int64_t u102;
-    int64_t u103;
-    int64_t u104;
-    int64_t u105;
-    int64_t u106;
-    int64_t u107;
-    int64_t u108;
-    int64_t u109;
-    int64_t u110;
-    int64_t u111;
-    int64_t u112;
-    int64_t u113;
-    int64_t u114;
-    int64_t u115;
-    int64_t u116;
-    int64_t u117;
-    int64_t u118;
-    int64_t u119;
-    int64_t u120;
-    int64_t u121;
-    int64_t u122;
-    int64_t u123;
-    int64_t u124;
-    int64_t u125;
-    int64_t u126;
-    int64_t u127;
-    int64_t u128;
-    int64_t u129;
-    int64_t u130;
-    int64_t u131;
-    int64_t u132;
-    int64_t u133;
-    int64_t u134;
-    int64_t u135;
-    int64_t u136;
-    int64_t u137;
-    int64_t u138;
-    int64_t u139;
+    int64_t u50[90];
     int64_t u140;
     int64_t u141;
     int64_t u142;
@@ -226,7 +195,7 @@ struct FFHeader {
 };
 
 /**
- * Format of a single lookup table entry
+ * @brief Format of a single lookup table entry
  *
  * As per the header there are lots of unused values in the lookup table.
  */
@@ -287,5 +256,11 @@ struct FFLookup {
     double mks_scale;
 };
 
+/**
+ * @}
+ */
 
+#ifdef __cplusplus
+}
+#endif
 #endif
